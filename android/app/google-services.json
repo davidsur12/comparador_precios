@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "338177179297",
+    "project_id": "beaming-edition-234519",
+    "storage_bucket": "beaming-edition-234519.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338177179297:android:118f2b506f754306fafae0",
+        "android_client_info": {
+          "package_name": "com.example.precios"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338177179297-5c7gk646gd6eu4fmggn38hnccte443pi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSwsAV9s9yMmgaKAIwgMZpct4TLcJFS6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338177179297-5c7gk646gd6eu4fmggn38hnccte443pi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
