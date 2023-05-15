@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:precios/firestore/addDate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Categorias extends StatefulWidget {
   const Categorias({super.key});
@@ -11,18 +11,20 @@ class Categorias extends StatefulWidget {
 }
 
 class _CategoriasState extends State<Categorias> {
-  var date=addDate();
-  var lista=[];
+  var date = addDate();
+  var lista = [];
   var db = FirebaseFirestore.instance;
 
-  
+  ScrollController _controller = ScrollController();
+  TextEditingController _controllerTxtField = TextEditingController();
 
- 
-void initState() {
-  lista=date.listaCategorias;
-}
+  String? selectedOption;
+  List<String> options = ['Opción 1', 'Opción 2', 'Opción 3'];
 
-final ScrollController _controller = ScrollController();
+  void initState() {
+    lista = date.listaCategorias;
+    // _controller.addListener(_printLatestValue);
+  }
 
   @override
   void dispose() {
@@ -30,79 +32,142 @@ final ScrollController _controller = ScrollController();
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [   Expanded(child: Container(
-        width: 200,
-        color:Color.fromRGBO(124, 77, 255, 1),
-        child: date.leerdatos(_controller)) ), 
-        ElevatedButton(onPressed: (){date.addCategoria();}, child: Text("Agregar datos")),
-         dialogo()], );
-    
+    return Column(children: [
+      Expanded(child: listaCategorias()),
+      SizedBox(
+        height: 15.0,
+      ),
+      _dialogo(),
+      SizedBox(
+        height: 15.0,
+      )
+    ]);
   }
-Widget lista2(){
 
-   final List<String> entries = <String>['A', 'B', 'C'];
-final List<int> colorCodes = <int>[600, 500, 100];
-
-  return ListView.separated(
-    padding: const EdgeInsets.all(8),
-    itemCount: entries.length,
-    itemBuilder: (BuildContext context, int index) {
-      return Container(
-        height: 50,
-        color: Colors.amber[colorCodes[index]],
-        child: Center(child: Text('Entry ${entries[index]}')),
-      );
-    },
-    separatorBuilder: (BuildContext context, int index) => const Divider(),
-  );
-}
- 
- 
-  Widget lista3(){
-
-    return  ListView.builder(
-    padding: const EdgeInsets.all(8),
-    itemCount:lista.length,
-    itemBuilder: (BuildContext context, int index) {
-      return Container(
-        height: 50,
-       // color: Colors.amber[colorCodes[index]],
-        child: Center(child: Text( lista[index])),
-      );
-    }
-  );
-
+  Widget listaCategorias() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: date.consultaCategorias().snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error al obtener los datos');
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: Text('Cargando...'));
+        }
+        return ListView.builder(
+          itemCount: snapshot.data!.docs.length,
+          controller: _controller,
+          itemBuilder: (BuildContext context, int index) {
+            return ListTile(
+              hoverColor: Colors.lightBlueAccent,
+              onTap: () => _onItemTapped(index, snapshot.data!.docs[index].id),
+              leading: CircleAvatar(
+                backgroundColor: const Color(0xff764abc),
+                child: Text(index.toString()),
+              ),
+              title: Text(
+                snapshot.data!.docs[index].id,
+                textAlign: TextAlign.center,
+              ),
+              trailing: PopupMenuButton(
+                onSelected: (value) {
+                  // your logic
+                },
+                itemBuilder: (BuildContext bc) {
+                  return const [
+                    PopupMenuItem(
+                      child: Text("Editar"),
+                      value: '/Editar',
+                    ),
+                    PopupMenuItem(
+                      child: Text("Eliminar"),
+                      value: '/Eliminar',
+                    ),
+                  ];
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
   }
-  Widget dialogo(){
 
-    return TextButton(
+  void _onItemTapped(int index, String categoria) {
+    // Manejar el evento de toque en el elemento de la lista
+    print('Elemento tocado: $index = $categoria');
+    Fluttertoast.showToast(
+      msg: "$categoria",
+      backgroundColor: Colors.green,
+    );
+  }
+
+  Widget _dialogo() {
+    return ElevatedButton(
       onPressed: () => showDialog<String>(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text('Agreagar categoria'),
-          content: SizedBox(width: 200, height: 100,
-            child:Column(children:[Text("Nombre de la categoria") ,
-           TextField(textAlign: TextAlign.center,),
-           ElevatedButton(onPressed: (){}, child: Text("Agregar categoria"))])),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            //side:new  BorderSide(color: Color(0xFF2A8068))
+          ),
+          title: const Text(
+            'Agreagar categoria',
+            textAlign: TextAlign.center,
+          ),
+          content: Container(
+              width: 200,
+              height: 70,
+              child: Column(children: [
+                TextField(
+                  decoration: const InputDecoration(
+                    hintStyle: TextStyle(fontSize: 17),
+                    hintText: 'Ingresa una categoria',
+                    suffixIcon: Icon(Icons.keyboard),
+                    // contentPadding: EdgeInsets.all(20),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                      borderSide: BorderSide(color: Colors.black, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide:
+                          BorderSide(color: Colors.lightBlueAccent, width: 2),
+                    ),
+                  ),
+                  controller: _controllerTxtField,
+                  textAlign: TextAlign.center,
+                ),
+              ])),
           actions: <Widget>[
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.pop(context, 'Cancel'),
-              child: const Text('Cancel'),
+              child: const Padding(
+                padding: EdgeInsets.only(left: 5.0, right: 5.0),
+                child: Text('Cancel'),
+              ),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK'),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, 'OK');
+                print(_controllerTxtField.text);
+                date.addCategoria(_controllerTxtField.text);
+                _controllerTxtField.text = "";
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(left: 13.0, right: 13.0),
+                child: Text('Ok'),
+              ),
             ),
           ],
         ),
       ),
-      child: const Text('Show Dialog'),
+      child: const Padding(
+          padding:
+              EdgeInsets.only(top: 15.0, right: 30.0, bottom: 15.0, left: 30.0),
+          child: Text('Agregar Categoria')),
     );
   }
-  
 }
