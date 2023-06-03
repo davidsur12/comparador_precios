@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:precios/firestore/addDate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:precios/screens/productos.dart';
-import 'package:precios/screens/ingresar_producto.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
-class Categorias extends StatefulWidget {
-  const Categorias({super.key});
+class Productos extends StatefulWidget {
+  const Productos({super.key});
 
   @override
-  State<Categorias> createState() => _CategoriasState();
+  State<Productos> createState() => _ProductosState();
 }
 
-class _CategoriasState extends State<Categorias> {
+class _ProductosState extends State<Productos> {
   var date = addDate();
   var lista = [];
   var db = FirebaseFirestore.instance;
@@ -35,23 +34,81 @@ class _CategoriasState extends State<Categorias> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Expanded(child: listaCategorias()),
-      SizedBox(
-        height: 15.0,
-      ),
-      _dialogo(),
-      SizedBox(
-        height: 15.0,
-      )
-    ]);
+    return MaterialApp(
+        home: Scaffold(
+            appBar: AppBar(
+              title: Center(
+                  child: Text(
+                "precios",
+                textAlign: TextAlign.center,
+              )),
+            ),
+            body: Column(children: [
+              Expanded(child: listaProductos()),
+              SizedBox(
+                height: 15.0,
+              ),
+              _dialogo(),
+              SizedBox(
+                height: 15.0,
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // date.addProductos("Salsas", "prueba4", "1254");
+                  //  date.addCollectioId("Salsas", "prueba4", "1254");
+                  date.consultaProductos();
+                },
+                child: Text("obtener datos "),
+              ),
+              lectorQr(),
+            ])));
+  }
+
+  Widget listaProductos() {
+    return StreamBuilder(
+      stream: date.consultaProductos(),
+      builder: (context, snapshot) {
+        /* if (snapshot.hasData) {
+          return CircularProgressIndicator(); // Muestra un indicador de carga mientras se obtienen los datos
+      
+        }*/
+        if (snapshot.hasError) {
+          return Text('Error al obtener los datos');
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          //return Center(child: Text('Cargando...'));
+          return CircularProgressIndicator();
+        }
+        // Obtiene los datos del documento
+        var documentData = snapshot.data!.data();
+
+        Map<String, dynamic> data = documentData as Map<String, dynamic>;
+
+        return Column(
+          children: [
+            Text("Producto :" + data["Marca"]),
+            Text("Marca :" + data["Descripcion"]),
+            Text("Descripcion :" + data["precio"]),//este campo debe obtenerse le array precio supermercado el ultimo item
+              Text("ID del producto :" + data["precio"]),
+              Text("Fecha ultimo precio :" + data["precio"]),//este campo debe llenarse con los diferentes precios de los puermercados
+              //tantos campos como  supermercados co su respectiva clasificacion
+            ElevatedButton(onPressed: (){}, child: Text("Actualizar datos")),
+             ElevatedButton(onPressed: (){}, child: Text("Agregar supermercado")),
+              ElevatedButton(onPressed: (){}, child: Text("Actualizar ultimo precio")),
+              ElevatedButton(onPressed: (){}, child: Text("Agregar precio"))
+          ],
+        );
+      },
+    );
   }
 
   Widget listaCategorias() {
     return StreamBuilder<QuerySnapshot>(
       stream: date.consultaCategorias().snapshots(),
+      //stream: date.consultaProductos().snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
+          
           return Text('Error al obtener los datos');
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -105,7 +162,6 @@ class _CategoriasState extends State<Categorias> {
       msg: "$categoria",
       backgroundColor: Colors.green,
     );
-    date.categoria = categoria;
     GoProductos();
   }
 
@@ -175,11 +231,29 @@ class _CategoriasState extends State<Categorias> {
           child: Text('Agregar Categoria')),
     );
   }
+Widget lectorQr(){
 
+return  ElevatedButton(
+              onPressed: () async {
+                var res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleBarcodeScannerPage(),
+                    ));
+                setState(() {
+                  if (res is String) {
+                    //result = res;
+                    print("barcode = $res");
+                  }
+                });
+              },
+              child: const Text('Open Scanner'),
+            );
+}
   GoProductos() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LectorProductos()),
+      MaterialPageRoute(builder: (context) => Productos()),
     );
   }
 }

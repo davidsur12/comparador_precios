@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:precios/screens/productos.dart';
 import 'firebase_options.dart';
 import 'package:precios/screens/categorias.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async{
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  
+   WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
 );
-  runApp(const MyApp());
+   runApp( MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
@@ -23,7 +28,7 @@ class MyApp extends StatelessWidget {
       
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home:const MyHomePage(title: 'Control de Precios'),
     );
   }
 }
@@ -41,54 +46,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
    
     return MaterialApp(home:Scaffold(
       appBar: AppBar(
 
-        title: Text(widget.title),
+        title: Center(child:Text(widget.title , textAlign: TextAlign.center,)),
       ),
-      body: Center(
-    
-        child: Categorias(),
-      )
-       // This trailing comma makes auto-formatting nicer for build methods.
+      body:const Categorias(),
+         
     ));
   }
 
-/*
-
-  void addDate(){
-    final user = <String, dynamic>{
-  "first": "Ada",
-  "last": "Lovelace",
-  "born": 1815
-};
-
-// Add a new document with a generated ID
-/*
-db.collection("Productos").add(user).then((DocumentReference doc) =>
-    print('DocumentSnapshot added with ID: ${doc.id}'));
-    */
-    final jabonCoco = <String, String>{
-  "id": "1239",
-  "Precio": "5000",
-  "Descripcion": "Jabon marca coco peso 12.0g olor a limon fecha de vec 3/9/2025"
-};
-    db.collection("Productos").doc("Jabones").collection("Coco").doc("1239").set(jabonCoco).onError((error, stackTrace) => print("nose agrego"));
-  }
-
-  void leerdatos()async{
-    await db.collection("Productos").get().then((event) {
-  for (var doc in event.docs) {
-    print("${doc.id} => ${doc.data()}");
-  }
-});
-  }
-  */
 }

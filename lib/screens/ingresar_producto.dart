@@ -14,13 +14,15 @@ class LectorProductos extends StatefulWidget {
 class _LectorProductosState extends State<LectorProductos> {
   String estado = "sin consultar";
   TextEditingController _controllerTxtField = TextEditingController();
-  bool dialogoNuevoProducto = true;
+  bool dialogoNuevoProducto = false;
+  ValueNotifier<bool> _miVariableBool = ValueNotifier<bool>(true);
 
   @override
   void initState() {
     // TODO: implement initState
     estado = "sin consultar";
-    dialogoNuevoProducto = true;
+    dialogoNuevoProducto = false;
+    _miVariableBool = ValueNotifier<bool>(false);
     super.initState();
   }
 
@@ -35,48 +37,66 @@ class _LectorProductosState extends State<LectorProductos> {
           children: [
             lectorQr(),
             btnAddManual(),
-            Text(estado),
-            exi(estado),
-            dialogoNuevoProductoView()
+            infoConsulta(estado),
+            AlertAddProducto(),
           ],
         ),
       ),
     );
   }
 
-  Widget dialogoNuevoProductoView() {
-    if (dialogoNuevoProducto) {
-      return Text("");
-    } else {
-      return ElevatedButton(
-          child: Text("Agregar  producto"),
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Producto no encontrado"),
-                    content: Text(
-                        "El prducto no se encuentra en la base de datos deseas agregarlo"),
-                    actions: [
-                      ElevatedButton(
-                          onPressed: () {
-/*
-    setState(() {
-      dialogoNuevoProducto=false;
-    });*/
-                          },
-                          child: Text("No")),
-                      ElevatedButton(onPressed: () {}, child: Text("Si"))
-                    ],
-                  );
-                });
-          });
-    }
+  Widget AlertAddProducto() {
+//encaso de no haber encontrado se mostrara un alertdialog que nos preguntara si queremos registrar un nuevo producto
+    return ValueListenableBuilder<bool>(
+        valueListenable: _miVariableBool,
+        builder: (context, value, child) {
+          if (!value) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              //consultar que hace esta linea de codigo
+              alert(context);
+            });
+          }
+          return Text(" ");
+        });
   }
 
-  Widget btnAddManual() {
-    return ElevatedButton(
+  alert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Título del diálogo'),
+          content: Text('Contenido del diálogo'),
+          actions: [
+            ElevatedButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                // Cerrar el diálogo
+                //Navigator.of(context).pop();
+                // dialogoNuevoProducto=false;
+              },
+            ),
+            ElevatedButton(
+              child: Text('Aceptar'),
+              onPressed: () {
+                // dialogoNuevoProducto=false;
+
+                // Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  btnAddManual() {
+    //ingresa el  barcode de forma manual para poder consultar un producto abre un alertdialog para ingresar los datos
+   ButtonStyle styleButton=ButtonStyle( padding: MaterialStateProperty.all(
+      EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+    ),);
+    return Container(padding: EdgeInsets.all(15),child: ElevatedButton(
+      style: styleButton,
         onPressed: () {
           showDialog<String>(
             context: context,
@@ -98,7 +118,6 @@ class _LectorProductosState extends State<LectorProductos> {
                         hintStyle: TextStyle(fontSize: 17),
                         hintText: 'Ingresa Barcode',
                         suffixIcon: Icon(Icons.keyboard),
-                        // contentPadding: EdgeInsets.all(20),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(12.0)),
                           borderSide: BorderSide(color: Colors.black, width: 2),
@@ -124,20 +143,22 @@ class _LectorProductosState extends State<LectorProductos> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context, 'OK');
-                    //  addDate().checkCollectionExistence("Productos").then(());
+
                     addDate()
                         .checkCollectionExistence(_controllerTxtField.text)
                         .then((value) {
-                      // result=value.toString();
                       setState(() {
-                        estado = value.toString();
+                        if(value){
+                           estado = "El producto "+ _controllerTxtField.text +  " esta registrado";
+                        }
+                        else{
+                              estado = "El producto " +_controllerTxtField.text  + " No esta registrado";
+                        }
+                       
                         dialogoNuevoProducto = value;
+                        _miVariableBool.value = value;
                       });
                     });
-                    // addDate().addCollectioId(addDate().categoria,  _controllerTxtField.text);
-                    // print(_controllerTxtField.text);
-                    //date.addCategoria(_controllerTxtField.text);
-                    //_controllerTxtField.text = "";
                   },
                   child: const Padding(
                     padding: EdgeInsets.only(left: 13.0, right: 13.0),
@@ -148,29 +169,32 @@ class _LectorProductosState extends State<LectorProductos> {
             ),
           );
         },
-        child: Text("Ingresar barcode manual"));
+        child: Text("Ingresar barcode manual")),);
+    
   }
 
-  Widget exi(String res) {
-/*addDate().checkCollectionExistence("Productos" , addDate().producto).then((value) {
- // result=value.toString();
-  setState(() {
-    estado=value.toString();
-  });
-   
-}
-);*/
-
-/*
-Fluttertoast.showToast(
-                    msg: estado,
-                    backgroundColor: Colors.green,
-                  );*/
-    return Text(estado);
+  Widget infoConsulta(String res) {
+    //retorna un text que nos informara el estado de la consulta si encontro o no el producto
+    TextStyle styleAlertDialog = TextStyle(color: Colors.cyan, fontSize: 20);
+    return Padding(
+        padding: EdgeInsets.only(top: 15),
+        child: Text(
+          res,
+          style: styleAlertDialog,
+          textAlign: TextAlign.center,
+        ));
   }
 
   Widget lectorQr() {
-    return ElevatedButton(
+     ButtonStyle styleButton=ButtonStyle( padding: MaterialStateProperty.all(
+      EdgeInsets.symmetric(vertical: 20.0, horizontal: 60.0),
+    ),);
+
+   return Container(  padding: EdgeInsets.all(15.0),child:
+
+
+    ElevatedButton(
+      style:styleButton ,
       onPressed: () async {
         var res = await Navigator.push(
             context,
@@ -245,7 +269,9 @@ Fluttertoast.showToast(
         });
       },
       child: const Text('Open Scanner'),
-    );
+    )
+);
+    
   }
 
   GoProductos() {
