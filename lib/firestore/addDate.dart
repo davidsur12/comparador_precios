@@ -39,12 +39,13 @@ class addDate {
     */
   }
 
-  addProductos( String barcode) {
+  addProductos( String barcode , Map<String , dynamic> datos) {
     /*para agregar un producto nesecito saber la categoria a la que pertenece el codigo de barras del producto
-    este va hacer el nombre de la collectio y el nombre de el documeto  cada documentodebera tene los siguientes campos
-    String Producto = mayonesa colombina
-    String Marca = colombina
-    Descripcion = mayonesa de 500g marca colombina 
+    este va hacer el nombre de la collection y el nombre de el documeto  cada documento debera tener los siguientes campos
+    String Producto = mayonesa colombina o  Spaguetti Clásico DORIA 1000 gr (deberia tener nombre del producto
+    la marca y el contenido)
+    String Marca = colombina  por el mometo  se salta por que la marca va en el producto y en la descripcion
+    Descripcion = mayonesa de 500g marca colombina deberia tener la descripcion del producto como vitaminas y propiedades
     array precioSupermercado = [2000 , 300 , 400 , 500]
     array fechaSupermercado =[fecha , fecha , fecha]
 
@@ -60,16 +61,11 @@ class addDate {
      deberia tener un campo supermercado para saber cuantos supermercado tengo y en caso de que este vacio los precios nose mostraran en caso de lo omptrario se 
 mostraran con el nombre del supermercado y el precio
     
-
-
-
-
-
-    
-
+supermercado se cmabia por tienda
+debo cambiar el nombre de variable producto por categoria
 
      */
-     Map<String, String> valores = <String, String>{};
+     Map<String, dynamic> valores = <String, String>{};
     Map<String, String> productos = <String, String>{"Productos":barcode};
 
     db.collection("Productos").doc(producto).collection(barcode).doc(barcode).set(valores).onError((e, _) => print("Error writing document: $e"));
