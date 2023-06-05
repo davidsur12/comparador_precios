@@ -1,20 +1,16 @@
-//import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:intl/intl.dart';
 
 
 class addDate {
-
- // addDate._privateConstructor();
+  // addDate._privateConstructor();
   static final addDate _instance = addDate._internal();
 
   factory addDate() {
     return _instance;
   }
-  addDate._internal() {
-    
-  }
+  addDate._internal() {}
 
   var db = FirebaseFirestore.instance;
   List<String> listaCategorias = [];
@@ -22,9 +18,8 @@ class addDate {
   String producto = "";
   String marca = "";
   String barcode = "";
+  String nuevoProducto = "";
 
-  
-  
   addCategoria(String categoria) {
     Map<String, String> marcas = <String, String>{};
 
@@ -39,7 +34,7 @@ class addDate {
     */
   }
 
-  addProductos( String barcode , Map<String , dynamic> datos) {
+  Future<void> addProductos(Map<String, dynamic> datos) async{
     /*para agregar un producto nesecito saber la categoria a la que pertenece el codigo de barras del producto
     este va hacer el nombre de la collection y el nombre de el documeto  cada documento debera tener los siguientes campos
     String Producto = mayonesa colombina o  Spaguetti Clásico DORIA 1000 gr (deberia tener nombre del producto
@@ -64,40 +59,62 @@ mostraran con el nombre del supermercado y el precio
 supermercado se cmabia por tienda
 debo cambiar el nombre de variable producto por categoria
 
-     */
-     Map<String, dynamic> valores = <String, String>{};
-    Map<String, String> productos = <String, String>{"Productos":barcode};
 
-    db.collection("Productos").doc(producto).collection(barcode).doc(barcode).set(valores).onError((e, _) => print("Error writing document: $e"));
-   // db.collection("Productos").doc(producto).set(productos).onError((e, _) => print("Error writing document: $e"));
-    
+     */
+
+    Map<String, String> productos = <String, String>{};
+    DateFormat format = DateFormat("yyyy-MM-dd hh:mm");
+    String date = format.format(DateTime.now());
+
+    Map<String, dynamic> valores = <String, dynamic>{
+      "Producto": datos["Producto"],
+      "Descripcion": datos["Descripcion"],
+      "Tienda": [datos["Tienda"]],
+      "Precios_" + datos["Tienda"]: [datos["Precio"]],
+      "Fecha_" + datos["Tienda"]: [date]
+    };
+
+    print(valores);
+    print(barcode);
+    print("producto " + producto);
+    print("categoria" + categoria);
+    await db.collection("Productos").doc(categoria).collection(barcode).doc(barcode).set(valores);
+    //db.collection("Productos").doc(producto).set(productos).onError((e, _) => print("Error writing document: $e"));
   }
 
-
-  addCollectioId(String producto,  String id) {
-     Map<String, String> valores = <String, String>{};
+  addCollectioId(String producto, String id) {
+    Map<String, String> valores = <String, String>{};
     Map<String, String> productos = <String, String>{};
 
-    db.collection("Productos").doc(producto).collection(id).doc(id).set(valores).onError((e, _) => print("Error writing document: $e"));
+    db
+        .collection("Productos")
+        .doc(producto)
+        .collection(id)
+        .doc(id)
+        .set(valores)
+        .onError((e, _) => print("Error writing document: $e"));
     //db.collection("Productos").doc(producto).set(productos).onError((e, _) => print("Error writing document: $e"));
-    
   }
 
- Future<bool> checkCollectionExistence(String collectionName ) async {
-  final collectionRef = db.collection("Productos");
-  final snapshot = await collectionRef.doc(categoria).collection(collectionName).get();
- //debo agregar el nomnre de barcode 
-  return snapshot.size>0; 
-}
+  Future<bool> checkCollectionExistence(String collectionName) async {
+    final collectionRef = db.collection("Productos");
+    final snapshot =
+        await collectionRef.doc(categoria).collection(collectionName).get();
+    //debo agregar el nomnre de barcode
+    return snapshot.size > 0;
+  }
 
   CollectionReference consultaCategorias() {
     return db.collection("Productos");
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> consultaProductos() {
-
-   return  db.collection('Productos').doc(categoria).collection(barcode).doc(barcode).snapshots();
-    
+    return db
+        .collection('Productos')
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode)
+        .snapshots();
   }
 
   void deleteDocument(String doc) {
