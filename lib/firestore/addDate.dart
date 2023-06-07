@@ -73,11 +73,6 @@ debo cambiar el nombre de variable producto por categoria
       "Precios_" + datos["Tienda"]: [datos["Precio"]],
       "Fecha_" + datos["Tienda"]: [date]
     };
-
-    print(valores);
-    print(barcode);
-    print("producto " + producto);
-    print("categoria" + categoria);
     await db.collection("Productos").doc(categoria).collection(barcode).doc(barcode).set(valores);
     //db.collection("Productos").doc(producto).set(productos).onError((e, _) => print("Error writing document: $e"));
   }
@@ -117,9 +112,35 @@ debo cambiar el nombre de variable producto por categoria
         .snapshots();
   }
 
+
+  Future<DocumentSnapshot> getDocumentData() async {
+  DocumentSnapshot snapshot = await db
+        .collection('Productos')
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode).get();
+
+        return snapshot;
+  /*
+  if (snapshot.exists) {
+    // El documento existe, puedes acceder a sus datos
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    
+    // Realiza las operaciones necesarias con los datos del documento
+    // Por ejemplo, imprime el valor de un campo específico
+    //print(data['Producto']);
+  } else {
+    // El documento no existe
+    print('El documento no existe');
+  }
+  */
+}
+ 
+ 
+ 
   void deleteDocument(String doc) {
     db.collection("Productos").doc(doc).delete().then(
-          (doc) => print("Document eliminado"),
+          (doc) => print("Documento eliminado"),
           onError: (e) => print("Error Documento no eliminado $e"),
         );
   }

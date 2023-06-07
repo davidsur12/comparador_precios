@@ -39,6 +39,7 @@ dependencies:
   fluttertoast: ^8.0.7
   firebase_core: ^2.12.0
   simple_barcode_scanner: ^0.0.8
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:
