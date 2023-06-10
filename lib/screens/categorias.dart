@@ -62,7 +62,7 @@ class _CategoriasState extends State<Categorias> {
           controller: _controller,
           itemBuilder: (BuildContext context, int index) {
             return ListTile(
-              hoverColor: Colors.lightBlueAccent,
+              hoverColor: Color.fromARGB(255, 28, 31, 32),
               onTap: () => _onItemTapped(index, snapshot.data!.docs[index].id),
               leading: CircleAvatar(
                 backgroundColor: const Color(0xff764abc),
@@ -110,6 +110,7 @@ class _CategoriasState extends State<Categorias> {
   }
 
   Widget _dialogo() {
+    //donde se agrega una nueva categoria
     return ElevatedButton(
       onPressed: () => showDialog<String>(
         context: context,
