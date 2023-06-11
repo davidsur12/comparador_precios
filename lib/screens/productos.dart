@@ -54,8 +54,7 @@ class _ProductosState extends State<Productos> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // date.addProductos("Salsas", "prueba4", "1254");
-                  //  date.addCollectioId("Salsas", "prueba4", "1254");
+                 
                   date.consultaProductos();
                 },
                 child: Text("obtener datos "),

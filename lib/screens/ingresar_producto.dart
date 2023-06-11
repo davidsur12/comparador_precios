@@ -4,6 +4,7 @@ import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:precios/screens/productos.dart';
 import 'package:precios/screens/crear_producto.dart';
+import 'package:precios/screens/info_producto.dart';
 
 class LectorProductos extends StatefulWidget {
   const LectorProductos({super.key});
@@ -32,7 +33,7 @@ class _LectorProductosState extends State<LectorProductos> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Precios"),
+        title: Text("Ingresa  Producto"),
       ),
       body: Center(
         child: Column(
@@ -168,6 +169,10 @@ class _LectorProductosState extends State<LectorProductos> {
                             estado = "El producto " +
                                 _controllerTxtField.text +
                                 " esta registrado";
+addDate().barcode=_controllerTxtField.text;
+                                
+                                GoProductos();
+
                           } else {
                             estado = "El producto " +
                                 _controllerTxtField.text +
@@ -294,9 +299,9 @@ class _LectorProductosState extends State<LectorProductos> {
   }
 
   GoProductos() {
-    Navigator.push(
+   Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Productos()),
+      MaterialPageRoute(builder: (context) => const InfoProducto()),
     );
   }
 

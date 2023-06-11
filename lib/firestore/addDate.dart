@@ -1,7 +1,5 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-
 
 class addDate {
   // addDate._privateConstructor();
@@ -34,7 +32,7 @@ class addDate {
     */
   }
 
-  Future<void> addProductos(Map<String, dynamic> datos) async{
+  Future<void> addProductos(Map<String, dynamic> datos) async {
     /*para agregar un producto nesecito saber la categoria a la que pertenece el codigo de barras del producto
     este va hacer el nombre de la collection y el nombre de el documeto  cada documento debera tener los siguientes campos
     String Producto = mayonesa colombina o  Spaguetti Clásico DORIA 1000 gr (deberia tener nombre del producto
@@ -73,7 +71,12 @@ debo cambiar el nombre de variable producto por categoria
       "Precios_" + datos["Tienda"]: [datos["Precio"]],
       "Fecha_" + datos["Tienda"]: [date]
     };
-    await db.collection("Productos").doc(categoria).collection(barcode).doc(barcode).set(valores);
+    await db
+        .collection("Productos")
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode)
+        .set(valores);
     //db.collection("Productos").doc(producto).set(productos).onError((e, _) => print("Error writing document: $e"));
   }
 
@@ -112,16 +115,16 @@ debo cambiar el nombre de variable producto por categoria
         .snapshots();
   }
 
-
   Future<DocumentSnapshot> getDocumentData() async {
-  DocumentSnapshot snapshot = await db
+    DocumentSnapshot snapshot = await db
         .collection('Productos')
         .doc(categoria)
         .collection(barcode)
-        .doc(barcode).get();
+        .doc(barcode)
+        .get();
 
-        return snapshot;
-  /*
+    return snapshot;
+    /*
   if (snapshot.exists) {
     // El documento existe, puedes acceder a sus datos
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
@@ -134,14 +137,83 @@ debo cambiar el nombre de variable producto por categoria
     print('El documento no existe');
   }
   */
-}
- 
- 
- 
-  void deleteDocument(String doc) {
+  }
+
+  deleteDocument(String doc) {
     db.collection("Productos").doc(doc).delete().then(
           (doc) => print("Documento eliminado"),
           onError: (e) => print("Error Documento no eliminado $e"),
         );
+  }
+
+  Future<String> addTienda(String nuevaTienda, String precio) async {
+
+    DateFormat format = DateFormat("yyyy-MM-dd hh:mm");
+    String date = format.format(DateTime.now());
+
+    String result = "Agregado correctamente";
+
+    Map<String, dynamic> valores = <String, dynamic>{
+      "Precios_" + nuevaTienda: [precio],
+      "Fecha_" + nuevaTienda: [date],
+    };
+
+    final DocumentReference document = db
+        .collection("Productos")
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode);
+
+    document.update({
+      'Tienda': FieldValue.arrayUnion([nuevaTienda]),
+    }).onError((error, stackTrace) => () {
+          result = "Error al agregar";
+        });
+
+    document.update(valores).onError((error, stackTrace) => () {
+          result = "Error al agregar";
+        });
+    return result;
+  }
+
+  Future<String> agregarPrecio(String tienda, String nuevoPrecio )async {
+
+    String result="Precio agregado";
+    final DocumentReference document = db
+        .collection("Productos")
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode);
+
+    print("Tienda = $tienda");
+    print("Precio = $nuevoPrecio");
+    document.update({
+        "Fecha_$tienda": FieldValue.arrayUnion([getFecha()]),
+      "Precios_$tienda": FieldValue.arrayUnion([nuevoPrecio]),
+   
+    }).onError((error, stackTrace) => () {
+          //result = "Error al agregar";
+           result="Error al agregar el precio";
+        });
+
+
+
+return result;
+  }
+
+actualizarDatos(){
+//esta funcion debe actualizar los datos que se ingresen en los campos como producto descricion del roducto, precio de cada fecha 
+//y el nombre de las tiendas
+  final DocumentReference document = db
+        .collection("Productos")
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode);
+       // document.update({"Pre": array});
+}
+
+  String getFecha() {
+    DateFormat format = DateFormat("yyyy-MM-dd hh:mm");
+    return format.format(DateTime.now());
   }
 }
