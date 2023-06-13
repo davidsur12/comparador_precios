@@ -4,6 +4,10 @@ import 'package:precios/firestore/addDate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 
+import 'dart:async';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
 class InfoProducto extends StatefulWidget {
   const InfoProducto({super.key});
 
@@ -20,7 +24,7 @@ class _InfoProductoState extends State<InfoProducto> {
   TextEditingController controllerFecha = TextEditingController();
   TextEditingController controllerNuevaTienda = TextEditingController();
   TextEditingController controllerNuevoPrecio = TextEditingController();
-
+  TextEditingController controllerCambioNombreTienda = TextEditingController();
 //lista de dropdown
   String _selectItemTienda = "";
   List<String> _itemsTienda = [];
@@ -37,7 +41,8 @@ class _InfoProductoState extends State<InfoProducto> {
   //index
   int indexSelectTienda = 0;
   int indexSelectFecha = 0;
-
+  //file
+ File? file;
   //decoration para textfield
   InputDecoration decorationn = const InputDecoration(
     hintStyle: TextStyle(fontSize: 17),
@@ -71,7 +76,8 @@ class _InfoProductoState extends State<InfoProducto> {
       appBar: AppBar(
         title: Text("Info productos"),
       ),
-      body: info(),
+      body: SingleChildScrollView(child: info(),) //info(),
+      
     );
   }
 
@@ -82,131 +88,14 @@ class _InfoProductoState extends State<InfoProducto> {
         Center(
           child: producto4(),
         ),
-        getInfo()
+      btnImagen(),
+      cargarImage(context) 
+
       ],
     );
   }
 
-  Widget producto2() {
-    return FutureBuilder<DocumentSnapshot>(
-        future: addDate().getDocumentData(),
-        builder:
-            (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Si la conexión está en espera, se muestra un indicador de carga
-            return CircularProgressIndicator();
-          } else {
-            if (snapshot.hasError) {
-              // Si se produce un error durante la carga, se muestra un mensaje de error
-              return Text('Error: ${snapshot.error}');
-            } else {
-              // Si la carga es exitosa, puedes acceder a los datos del DocumentSnapshot
-
-              contextAlert = context;
-              final document = snapshot.data;
-              Map<String, dynamic> data =
-                  document!.data() as Map<String, dynamic>;
-
-              _itemsTienda = List.from(data["Tienda"]);
-              _itemsTienda.add("Agregar Tienda");
-              _selectItemTienda = _itemsTienda[indexSelectTienda];
-
-              _itemsFecha = List.from(data["Fecha_$_selectItemTienda"]);
-              _selectItemFecha = _itemsFecha[0];
-
-              _itemsPrecio = List.from(data["Precios_$_selectItemTienda"]);
-              _selectItemPrecio = _itemsPrecio[0].toString();
-
-              //adtualizo los datos  aa los controladores de los textfield
-              controllerProducto.text = data['Producto'];
-              controllerDescripcion.text = data['Descripcion'];
-              controllerPrecio.text = _selectItemPrecio;
-//deberia pasar como parametro cada lista o valor y dentro de la funcion se debera hacer toda la logica
-//para mostar los datos  en los que usan list se debera mostar el ultimo valor de array  y se debera
-//tener la capcidad de cambiar y mostar el valor correspondiente segun el item selecionado
-//ademas se debe programar el boton de actualizar.
-
-// corregir lo del lector qr para que redirija hacia  la ventana correspondiente
-
-              return Column(
-                children: [
-                  producto(),
-                  descripcion(),
-                  tiendas(),
-                  fecha(),
-                  precio(),
-                  actualizarPrecio(),
-                  agregarPrecio()
-                ],
-              );
-            }
-          }
-        });
-  }
-
-  Widget producto3() {
-    return StreamBuilder<DocumentSnapshot>(
-        stream: Stream.fromFuture(addDate().getDocumentData()),
-        builder:
-            (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Si la conexión está en espera, se muestra un indicador de carga
-            return CircularProgressIndicator();
-          } else {
-            if (snapshot.hasError) {
-              // Si se produce un error durante la carga, se muestra un mensaje de error
-              return Text('Error: ${snapshot.error}');
-            } else {
-              // Si la carga es exitosa, puedes acceder a los datos del DocumentSnapshot
-
-              contextAlert = context;
-              final document = snapshot.data;
-              Map<String, dynamic> data =
-                  document!.data() as Map<String, dynamic>;
-
-              _itemsTienda = List.from(data["Tienda"]);
-              _itemsTienda.add("Agregar Tienda");
-
-              /*print("items " + _itemsTienda[indexSelectTienda]);
-              print("select " + _itemsTienda[indexSelectTienda]);
-              print("index selecionado " + indexSelectTienda.toString());*/
-              _selectItemTienda = _itemsTienda[indexSelectTienda];
-
-              //_selectItemTienda = "ccc";
-
-              _itemsFecha = List.from(data["Fecha_$_selectItemTienda"]);
-              _selectItemFecha = _itemsFecha[indexSelectFecha];
-
-              _itemsPrecio = List.from(data["Precios_$_selectItemTienda"]);
-              _selectItemPrecio = _itemsPrecio[0].toString();
-
-              //adtualizo los datos  aa los controladores de los textfield
-              controllerProducto.text = data['Producto'];
-              controllerDescripcion.text = data['Descripcion'];
-              controllerPrecio.text = _selectItemPrecio;
-//deberia pasar como parametro cada lista o valor y dentro de la funcion se debera hacer toda la logica
-//para mostar los datos  en los que usan list se debera mostar el ultimo valor de array  y se debera
-//tener la capcidad de cambiar y mostar el valor correspondiente segun el item selecionado
-//ademas se debe programar el boton de actualizar.
-
-// corregir lo del lector qr para que redirija hacia  la ventana correspondiente
-
-              return Column(
-                children: [
-                  producto(),
-                  descripcion(),
-                  tiendas(),
-                  fecha(),
-                  precio(),
-                  actualizarPrecio(),
-                  agregarPrecio()
-                ],
-              );
-            }
-          }
-        });
-  }
-
+ 
   Widget producto4() {
     return StreamBuilder<DocumentSnapshot>(
         stream: Stream.fromFuture(addDate().getDocumentData()),
@@ -221,48 +110,61 @@ class _InfoProductoState extends State<InfoProducto> {
               return Text('Error: ${snapshot.error}');
             } else {
               // Si la carga es exitosa, puedes acceder a los datos del DocumentSnapshot
-
-              contextAlert = context;
               final document = snapshot.data;
               Map<String, dynamic> data =
                   document!.data() as Map<String, dynamic>;
 
-              _itemsTienda = List.from(data["Tienda"]);
-              _itemsTienda.add("Agregar Tienda");
-              _selectItemTienda = _itemsTienda[indexSelectTienda];
+              try {
+                _itemsTienda = List.from(data["Tienda"]);
+                _itemsTienda.add("Agregar Tienda");
+                _selectItemTienda = _itemsTienda[indexSelectTienda];
 
-              print("Fecha_$_selectItemTienda");
+                if (_itemsTienda.length - 1 != indexSelectTienda) {
+                  indexSelectTienda = indexSelectTienda;
 
-              if (_itemsTienda.length - 1 != indexSelectTienda) {
-                indexSelectTienda = indexSelectTienda;
+                  _itemsFecha = List.from(data["Fecha_$_selectItemTienda"]);
+                  _selectItemFecha = _itemsFecha[indexSelectFecha];
+
+                  _itemsPrecio = List.from(data["Precios_$_selectItemTienda"]);
+                  _selectItemPrecio = _itemsPrecio[indexSelectFecha].toString();
+                  controllerPrecio.text = _selectItemPrecio;
+                }
                 
-                _itemsFecha = List.from(data["Fecha_$_selectItemTienda"]);
-                _selectItemFecha = _itemsFecha[indexSelectFecha];
+                controllerProducto.text = data['Producto'];
+                controllerDescripcion.text = data['Descripcion'];
+                controllerPrecio.text = _selectItemPrecio;
 
-                _itemsPrecio = List.from(data["Precios_$_selectItemTienda"]);
-                _selectItemPrecio = _itemsPrecio[indexSelectFecha].toString();
-                controllerPrecio.text=_selectItemPrecio;
+                return Column(
+                  children: [
+                    producto(),
+                    descripcion(),
+                    precio(),
+                    tiendas(),
+                    cambiarNombreTienda(),
+                    fecha(),
+                    precio(),
+                    actualizarPrecio(),
+                    agregarPrecio(),
+
+                    
+                  ],
+                );
+              } catch (e) {
+                print("error $e");
               }
+               
+             return ElevatedButton(child:Text("Algo salio mal") , onPressed: (){
+               setState(() {
+                
+              });
 
-              controllerProducto.text = data['Producto'];
-              controllerDescripcion.text = data['Descripcion'];
-              controllerPrecio.text = _selectItemPrecio;
-              return Column(
-                children: [
-                  producto(),
-                  descripcion(),
-                  precio(),
-                  tiendas(),
-                  fecha(),
-                   precio(),
-                  actualizarPrecio(),
-                  agregarPrecio()
-                ],
-              );
+             },);
+             
             }
           }
         });
   }
+
 
   Widget producto() {
     return Container(
@@ -308,9 +210,6 @@ class _InfoProductoState extends State<InfoProducto> {
   }
 
   Widget tiendas() {
-    //validar que cuando se selecione un item se muestre el item selecionado con toda la informacion en los campos
-    //correspondientes
-
     return Container(
         margin: EdgeInsets.all(5),
         child: Row(
@@ -451,11 +350,10 @@ class _InfoProductoState extends State<InfoProducto> {
                 child: DropdownButton<String>(
               value: _selectItemFecha,
               onChanged: (String? newValue) {
-
                 _selectItemFecha = newValue!;
-                    indexSelectFecha = _itemsFecha.indexWhere(
-                        (elemento) => elemento == _selectItemFecha);
-                    print("Cambio " + _selectItemFecha);
+                indexSelectFecha = _itemsFecha
+                    .indexWhere((elemento) => elemento == _selectItemFecha);
+                print("Cambio " + _selectItemFecha);
                 setState(() {
                   _selectItemFecha = newValue!;
                 });
@@ -493,12 +391,17 @@ class _InfoProductoState extends State<InfoProducto> {
           });
         });
   }
- Widget agregarPrecio(){
 
-  return ElevatedButton(onPressed: (){alertPrecio();}, child: Text("Agregar Precio"));
- }
- alertPrecio(){
- final RegExp _numericRegex = RegExp(r'^\d+\.?\d*$');
+  Widget agregarPrecio() {
+    return ElevatedButton(
+        onPressed: () {
+          alertPrecio();
+        },
+        child: Text("Agregar Precio"));
+  }
+
+  alertPrecio() {
+    final RegExp _numericRegex = RegExp(r'^\d+\.?\d*$');
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -509,7 +412,6 @@ class _InfoProductoState extends State<InfoProducto> {
             height: 130,
             child: Column(
               children: [
-                
                 TextField(
                     controller: controllerNuevoPrecio,
                     decoration: InputDecoration(
@@ -538,8 +440,7 @@ class _InfoProductoState extends State<InfoProducto> {
             ElevatedButton(
               child: Text('Agregar'),
               onPressed: () {
-                
-            addPrecio();
+                addPrecio();
                 Navigator.of(context).pop();
                 setState(() {});
 
@@ -553,35 +454,150 @@ class _InfoProductoState extends State<InfoProducto> {
         );
       },
     );
-
   }
 
   Widget actualizarPrecio() {
-    return ElevatedButton(onPressed: () {}, child: Text("Actualizar precio"));
+    return ElevatedButton(onPressed: () { actulaizarDatos();}, child: Text("Actualizar precio"));
+  }
+
+  Widget cambiarNombreTienda() {
+    return ElevatedButton(
+      child: Text("Cambiar nombre tienda"),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Cambio de Nombre de $_selectItemTienda'),
+              content: Container(
+                width: 200,
+                height: 130,
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: controllerCambioNombreTienda,
+                      decoration: InputDecoration(
+                        hintText: 'Tienda',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  child: Text('Cancelar'),
+                  onPressed: () {
+                    // Cerrar el diálogo
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  child: Text('Cambiar'),
+                  onPressed: () {
+                    updateNameTienda();
+                    /* Fluttertoast.showToast(
+              msg: "barcode = $result",
+              backgroundColor: Colors.green,
+            );*/
+                    Navigator.of(context).pop();
+                    setState(() {});
+
+                    /*
+               muestro el alert dialogo para crear un nuevo producto con los diferentes 
+               campos a llenar luego registro el producto y la nformacion basica 
+                */
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   addTienda() {
     controllerNuevaTienda.text =
         controllerNuevaTienda.text.replaceAll(' ', ''); //quito los espacios
-    addDate().addTienda(controllerNuevaTienda.text, controllerNuevoPrecio.text).then((value) {
-
+    addDate()
+        .addTienda(controllerNuevaTienda.text, controllerNuevoPrecio.text)
+        .then((value) {
       Fluttertoast.showToast(
-              msg: value,
-              backgroundColor: Colors.green,
-            );
+        msg: value,
+        backgroundColor: Colors.green,
+      );
     });
   }
 
-addPrecio(){
-controllerNuevoPrecio.text =
-        controllerNuevoPrecio.text.replaceAll(' ', ''); 
-  addDate().agregarPrecio( "$_selectItemTienda" , controllerNuevoPrecio.text ).then((value) {
-Fluttertoast.showToast(
-              msg: value,
-              backgroundColor: Colors.green,
-            );
+  addPrecio() {
+    controllerNuevoPrecio.text = controllerNuevoPrecio.text.replaceAll(' ', '');
+    addDate()
+        .agregarPrecio("$_selectItemTienda", controllerNuevoPrecio.text)
+        .then((value) {
+      Fluttertoast.showToast(
+        msg: value,
+        backgroundColor: Colors.green,
+      );
+    });
+    /**/
+  }
 
-  });
-  /**/
-}
+  updateNameTienda() {
+    addDate().updateNameTienda(
+        _selectItemTienda,
+        controllerCambioNombreTienda.text,
+        _itemsFecha,
+        _itemsPrecio,
+        indexSelectTienda);
+  }
+
+  actulaizarDatos() {
+
+    var precios=List.from(_itemsPrecio);
+    precios[indexSelectFecha]=controllerNuevoPrecio.text;
+    precios[indexSelectFecha]=controllerPrecio.text;
+    Map<String, dynamic> datos = {
+      "Producto": controllerProducto.text,
+      "Descripcion": controllerDescripcion.text,
+      "Precios_$_selectItemTienda":precios,
+  
+    };
+    addDate().actualizarDatos(datos);
+    print("nuevos datos = " + datos.toString());
+  }
+
+  
+
+  Widget btnImagen() {
+    return ElevatedButton(
+        onPressed: () async {
+          ImagePicker picker = ImagePicker();
+          XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+         // print("presione el boton");
+          if (image != null) {
+          //  print("deberia obtener la image");
+            setState(() {
+              print(image.path.toString());
+              file = File(image.path);
+              print(file!.path.toString());
+              //img.image = image;
+            });
+          }
+        },
+        child: Padding(padding: EdgeInsets.only(top: 20.0 , bottom: 20.0 , left: 50.0 , right: 50.0),child:Text("Seleccionar  Imagen" , style: TextStyle(fontSize: 20.0),)));
+  }
+
+  Widget cargarImage(BuildContext context) {
+    if (file != null) {
+      //Img img = Img();
+      //img.file = file!;
+
+      //imgLoag = true;
+      return Image.network(file!.path , width: 90,);
+    } else {
+      //imgLoag = false;
+      return Text("");
+    }
+  }
 }

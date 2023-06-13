@@ -147,7 +147,6 @@ debo cambiar el nombre de variable producto por categoria
   }
 
   Future<String> addTienda(String nuevaTienda, String precio) async {
-
     DateFormat format = DateFormat("yyyy-MM-dd hh:mm");
     String date = format.format(DateTime.now());
 
@@ -176,9 +175,8 @@ debo cambiar el nombre de variable producto por categoria
     return result;
   }
 
-  Future<String> agregarPrecio(String tienda, String nuevoPrecio )async {
-
-    String result="Precio agregado";
+  Future<String> agregarPrecio(String tienda, String nuevoPrecio) async {
+    String result = "Precio agregado";
     final DocumentReference document = db
         .collection("Productos")
         .doc(categoria)
@@ -188,29 +186,70 @@ debo cambiar el nombre de variable producto por categoria
     print("Tienda = $tienda");
     print("Precio = $nuevoPrecio");
     document.update({
-        "Fecha_$tienda": FieldValue.arrayUnion([getFecha()]),
+      "Fecha_$tienda": FieldValue.arrayUnion([getFecha()]),
       "Precios_$tienda": FieldValue.arrayUnion([nuevoPrecio]),
-   
     }).onError((error, stackTrace) => () {
           //result = "Error al agregar";
-           result="Error al agregar el precio";
+          result = "Error al agregar el precio";
         });
 
-
-
-return result;
+    return result;
   }
 
-actualizarDatos(){
-//esta funcion debe actualizar los datos que se ingresen en los campos como producto descricion del roducto, precio de cada fecha 
+  actualizarDatos(Map<String , dynamic> datos) {
+//esta funcion debe actualizar los datos que se ingresen en los campos como producto descricion del roducto, precio de cada fecha
 //y el nombre de las tiendas
+    final DocumentReference document = db
+        .collection("Productos")
+        .doc(categoria)
+        .collection(barcode)
+        .doc(barcode);
+   document.update(datos);
+  }
+
+  updateNameTienda(String tienda1, String tienda2, List<String> listaFecha,
+      List<String> listaPrecios, int indexTienda) {
+    //tienda1 es la tienda que vamos  a borrar
+    //tienda2  es el nuevo nombre de la tienda
+
+    print("Tienda1 = $tienda1");
+    print("Tienda2 = $tienda2");
+    print("Lista fecha = $listaFecha");
+    print("Lista precios = $listaPrecios");
+    print("index = $indexTienda");
+
   final DocumentReference document = db
         .collection("Productos")
         .doc(categoria)
         .collection(barcode)
         .doc(barcode);
-       // document.update({"Pre": array});
-}
+     document.update({
+//agrego la nueva tienda y los valores
+     'Tienda': FieldValue.arrayUnion([tienda2]),
+      "Precios_$tienda2": List.from(listaPrecios),
+      "Fecha_$tienda2": List.from(listaFecha),  
+      });
+
+     document.update({
+      //borro la tienda  y los valores
+      'Tienda': FieldValue.arrayRemove([tienda1]),
+       "Precios_$tienda1":  FieldValue.delete(),
+       "Fecha_$tienda1":FieldValue.delete(),
+     });
+
+     
+
+/*
+ '"Precios_$tienda1"': FieldValue.arrayRemove(["Precios_$tienda1"]),
+  documentReference.update({
+    'nombre_array': FieldValue.arrayRemove([element])
+  }).then((value) {
+    print('Elemento eliminado del array correctamente');
+  }).catchError((error) {
+    print('Error al eliminar el elemento del array: $error');
+  });
+ */
+  }
 
   String getFecha() {
     DateFormat format = DateFormat("yyyy-MM-dd hh:mm");

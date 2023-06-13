@@ -4,6 +4,9 @@ import 'package:precios/firestore/addDate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:precios/screens/info_producto.dart';
 
+
+
+
 class CrearProducto extends StatefulWidget {
   const CrearProducto({super.key});
 
@@ -152,8 +155,8 @@ class _CrearProductoState extends State<CrearProducto> {
   agregarDatos() {
 //elimino los espacios
     controllerPrecio.text = controllerPrecio.text.replaceAll(' ', '');
-    controllerDescripcion.text = controllerDescripcion.text.replaceAll(' ', '');
-    controllerProducto.text = controllerProducto.text.replaceAll(' ', '');
+   // controllerDescripcion.text = controllerDescripcion.text.replaceAll(' ', '');
+    //controllerProducto.text = controllerProducto.text.replaceAll(' ', '');
     controllerTienda.text = controllerTienda.text.replaceAll(' ', '');
     //verifico que los textfield no esten vacios
     if (controllerPrecio.text.isNotEmpty &&
@@ -193,4 +196,8 @@ class _CrearProductoState extends State<CrearProducto> {
       MaterialPageRoute(builder: (context) => const InfoProducto()),
     );
   }
+
+
 }
+//flutter pub add firebase_storage
+//https://firebase.google.com/docs/storage/flutter/start?hl=es-419&authuser=0
