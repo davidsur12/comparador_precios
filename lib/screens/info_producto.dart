@@ -3,10 +3,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:precios/firestore/addDate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:precios/firestore/storage.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 
 class InfoProducto extends StatefulWidget {
   const InfoProducto({super.key});
@@ -580,7 +582,7 @@ class _InfoProductoState extends State<InfoProducto> {
             setState(() {
               print(image.path.toString());
               file = File(image.path);
-              print(file!.path.toString());
+            
               //img.image = image;
             });
           }
@@ -590,14 +592,50 @@ class _InfoProductoState extends State<InfoProducto> {
 
   Widget cargarImage(BuildContext context) {
     if (file != null) {
-      //Img img = Img();
-      //img.file = file!;
+     
+      print(file!);
+       File imageFile = File(file!.path);
+   
+      try{
 
-      //imgLoag = true;
-      return Image.network(file!.path , width: 90,);
+
+ if (kIsWeb) {
+    // Lógica específica para el entorno web
+    print('La aplicación se está ejecutando en un navegador web');
+       
+     imgGallery(file!.path);
+   return Image.network(file!.path);
+  
+  } else {
+        // Lógica específica para Android u otro entorno
+      print('La aplicación se está ejecutando en Android u otro entorno');
+         storageFirebase().subirImagen(addDate().barcode, file!) ;
+
+     return Image(image: FileImage(file!),);
+  
+  }
+
+
+      }
+      catch(e){
+       return  Text(e.toString());
+      }
+      return Text("l");
+
+      
     } else {
       //imgLoag = false;
       return Text("");
     }
   }
+
+  Future<void> imgGallery(String path) async {
+    String result="";
+Uint8List imageData = await XFile(path).readAsBytes();
+result=await storageFirebase().subirImageWeb(imageData , addDate().barcode);
+ 
+Fluttertoast.showToast(
+              msg:result,
+              backgroundColor: Colors.green,);
+}
 }

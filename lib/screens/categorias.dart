@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:precios/firestore/addDate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:precios/screens/productos.dart';
 import 'package:precios/screens/ingresar_producto.dart';
 
 class Categorias extends StatefulWidget {
@@ -24,7 +23,6 @@ class _CategoriasState extends State<Categorias> {
 
   void initState() {
     lista = date.listaCategorias;
-    // _controller.addListener(_printLatestValue);
   }
 
   @override
@@ -62,7 +60,7 @@ class _CategoriasState extends State<Categorias> {
           controller: _controller,
           itemBuilder: (BuildContext context, int index) {
             return ListTile(
-              hoverColor: Color.fromARGB(255, 28, 31, 32),
+              hoverColor: Color.fromARGB(255, 23, 158, 203),
               onTap: () => _onItemTapped(index, snapshot.data!.docs[index].id),
               leading: CircleAvatar(
                 backgroundColor: const Color(0xff764abc),
@@ -135,7 +133,7 @@ class _CategoriasState extends State<Categorias> {
                     // contentPadding: EdgeInsets.all(20),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                      borderSide: BorderSide(color: Colors.black, width: 2),
+                      borderSide: BorderSide(color: Colors.blue, width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),

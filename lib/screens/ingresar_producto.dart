@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:precios/firestore/addDate.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:precios/screens/productos.dart';
 import 'package:precios/screens/crear_producto.dart';
 import 'package:precios/screens/info_producto.dart';
 
@@ -14,12 +13,13 @@ class LectorProductos extends StatefulWidget {
 }
 
 class _LectorProductosState extends State<LectorProductos> {
-  String estado = "sin consultar";
+  String estado = "Sin Consultar";
   String codigoConsultado = "";
   TextEditingController _controllerTxtField = TextEditingController();
   bool dialogoNuevoProducto = false;
   ValueNotifier<bool> _miVariableBool = ValueNotifier<bool>(true);
-
+  TextStyle styleTextoBtn = TextStyle(fontSize: 18);
+  TextStyle styleTextoBtnManual = TextStyle(fontSize: 15);
   @override
   void initState() {
     // TODO: implement initState
@@ -32,20 +32,34 @@ class _LectorProductosState extends State<LectorProductos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Ingresa  Producto"),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            lectorQr(),
-            btnAddManual(),
-            infoConsulta(estado),
-            AlertAddProducto(),
-          ],
+        appBar: AppBar(
+          title: Center(child: Text("Barcode")),
         ),
-      ),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                spacio(),
+                imgBarcode(),
+                lectorQr(),
+                btnAddManual(),
+                infoConsulta(estado),
+                AlertAddProducto(),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  Widget spacio() {
+    return SizedBox(
+      height: 25,
     );
+  }
+
+  Widget imgBarcode() {
+    return Image.asset("assets/barcode.png", width: 150);
   }
 
   Widget AlertAddProducto() {
@@ -87,8 +101,8 @@ class _LectorProductosState extends State<LectorProductos> {
                campos a llenar luego registro el producto y la nformacion basica 
                 */
                 Navigator.of(context).pop();
-               addDate().barcode=_controllerTxtField.text;
-                 _miVariableBool.value = true;
+                addDate().barcode = _controllerTxtField.text;
+                _miVariableBool.value = true;
                 GoCrearProductos();
               },
             ),
@@ -102,12 +116,13 @@ class _LectorProductosState extends State<LectorProductos> {
     //ingresa el  barcode de forma manual para poder consultar un producto abre un alertdialog para ingresar los datos
     ButtonStyle styleButton = ButtonStyle(
       padding: MaterialStateProperty.all(
-        EdgeInsets.symmetric(vertical: 20.0, horizontal: 30.0),
+        EdgeInsets.symmetric(vertical: 50.0, horizontal: 32.0),
       ),
     );
     return Container(
       padding: EdgeInsets.all(15),
       child: ElevatedButton(
+          onHover: (value) {},
           style: styleButton,
           onPressed: () {
             showDialog<String>(
@@ -118,7 +133,7 @@ class _LectorProductosState extends State<LectorProductos> {
                   //side:new  BorderSide(color: Color(0xFF2A8068))
                 ),
                 title: const Text(
-                  'Ingresar Barcode',
+                  'Barcode',
                   textAlign: TextAlign.center,
                 ),
                 content: Container(
@@ -169,10 +184,9 @@ class _LectorProductosState extends State<LectorProductos> {
                             estado = "El producto " +
                                 _controllerTxtField.text +
                                 " esta registrado";
-addDate().barcode=_controllerTxtField.text;
-                                
-                                GoProductos();
+                            addDate().barcode = _controllerTxtField.text;
 
+                            GoProductos();
                           } else {
                             estado = "El producto " +
                                 _controllerTxtField.text +
@@ -193,7 +207,7 @@ addDate().barcode=_controllerTxtField.text;
               ),
             );
           },
-          child: Text("Ingresar barcode manual")),
+          child: Text("Ingresar barcode manual", style: styleTextoBtnManual)),
     );
   }
 
@@ -212,7 +226,7 @@ addDate().barcode=_controllerTxtField.text;
   Widget lectorQr() {
     ButtonStyle styleButton = ButtonStyle(
       padding: MaterialStateProperty.all(
-        EdgeInsets.symmetric(vertical: 20.0, horizontal: 60.0),
+        EdgeInsets.symmetric(vertical: 50.0, horizontal: 80.0),
       ),
     );
 
@@ -228,13 +242,6 @@ addDate().barcode=_controllerTxtField.text;
                 ));
             setState(() {
               if (res is String) {
-                //result = res;
-                // print("barcode = $res");
-                /*  Fluttertoast.showToast(
-              msg: "barcode = $res",
-              backgroundColor: Colors.green,
-            );*/
-
                 addDate().barcode = res;
                 setState(() {
                   estado = res;
@@ -265,7 +272,7 @@ addDate().barcode=_controllerTxtField.text;
                       });
                       return Text("Error al Consultar");
                     } else {
-                      //return Text('Datos: ${snapshot.data}');
+                      
                       if (snapshot.data!) {
                         Fluttertoast.showToast(
                           msg: "producto $res Si esxiste",
@@ -294,12 +301,15 @@ addDate().barcode=_controllerTxtField.text;
               }
             });
           },
-          child: const Text('Open Scanner'),
+          child: Text(
+            'Scanner',
+            style: styleTextoBtn,
+          ),
         ));
   }
 
   GoProductos() {
-   Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const InfoProducto()),
     );
