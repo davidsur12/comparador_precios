@@ -242,10 +242,48 @@ class _LectorProductosState extends State<LectorProductos> {
                 ));
             setState(() {
               if (res is String) {
-                addDate().barcode = res;
+                //addDate().barcode = res;
                 setState(() {
                   estado = res;
+                  codigoConsultado=res;
+                  addDate().barcode = codigoConsultado;
                 });
+                //consulto si la collectionexiste
+                addDate().checkCollectionExistence(res).then((value) {
+                 
+                  print("el barcode es $res");
+                   // addDate().barcode = res;
+                 
+                    print("el barcode es de la clase addDate " + addDate().barcode  );
+                  setState(() {
+
+                    
+                    estado = res;
+                    if (value) {
+                      
+                      Fluttertoast.showToast(
+                        msg: "producto $res Si esxiste",
+                        backgroundColor: Colors.green,
+                      );
+
+                    } else {
+                      if (res == "-1") {
+                        estado = "Sin Colsultar";
+                      } else {
+                        
+                        Fluttertoast.showToast(
+                          msg: "producto $res No esxiste",
+                          backgroundColor: Colors.green,
+                        );
+                        dialogoNuevoProducto = value;
+                    _miVariableBool.value = value;
+                      }
+                    }
+                    
+                  });
+                });
+
+/*
                 FutureBuilder(
                   future: addDate().checkCollectionExistence(res),
                   builder:
@@ -297,6 +335,7 @@ class _LectorProductosState extends State<LectorProductos> {
                     }
                   },
                 );
+                */
                 // GoProductos();
               }
             });
@@ -316,6 +355,7 @@ class _LectorProductosState extends State<LectorProductos> {
   }
 
   GoCrearProductos() {
+     addDate().barcode = codigoConsultado;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CrearProducto()),

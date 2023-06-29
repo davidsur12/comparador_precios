@@ -44,7 +44,8 @@ class _InfoProductoState extends State<InfoProducto> {
   int indexSelectTienda = 0;
   int indexSelectFecha = 0;
   //file
- File? file;
+  File? file;
+  Uint8List? imageData;
   //decoration para textfield
   InputDecoration decorationn = const InputDecoration(
     hintStyle: TextStyle(fontSize: 17),
@@ -75,12 +76,14 @@ class _InfoProductoState extends State<InfoProducto> {
   Widget build(BuildContext context) {
     contextAlert = context;
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Info productos"),
-      ),
-      body: SingleChildScrollView(child: info(),) //info(),
-      
-    );
+        appBar: AppBar(
+          title: Text("Info productos"),
+        ),
+        body: SingleChildScrollView(
+          child: info(),
+        ) //info(),
+
+        );
   }
 
   Widget info() {
@@ -90,14 +93,23 @@ class _InfoProductoState extends State<InfoProducto> {
         Center(
           child: producto4(),
         ),
-      btnImagen(),
-      cargarImage(context) 
-
+        btnImagen(),
+        cargarImage(context),
+        btn3()
       ],
     );
   }
 
- 
+  Widget btn3() {
+    return ElevatedButton(
+        onPressed: () {
+          storageFirebase().consultaraImg(addDate().barcode).then((value) {
+            print(value);
+          });
+        },
+        child: Text("consultar imagen"));
+  }
+
   Widget producto4() {
     return StreamBuilder<DocumentSnapshot>(
         stream: Stream.fromFuture(addDate().getDocumentData()),
@@ -131,7 +143,7 @@ class _InfoProductoState extends State<InfoProducto> {
                   _selectItemPrecio = _itemsPrecio[indexSelectFecha].toString();
                   controllerPrecio.text = _selectItemPrecio;
                 }
-                
+
                 controllerProducto.text = data['Producto'];
                 controllerDescripcion.text = data['Descripcion'];
                 controllerPrecio.text = _selectItemPrecio;
@@ -147,26 +159,22 @@ class _InfoProductoState extends State<InfoProducto> {
                     precio(),
                     actualizarPrecio(),
                     agregarPrecio(),
-
-                    
                   ],
                 );
               } catch (e) {
                 print("error $e");
               }
-               
-             return ElevatedButton(child:Text("Algo salio mal") , onPressed: (){
-               setState(() {
-                
-              });
 
-             },);
-             
+              return ElevatedButton(
+                child: Text("Algo salio mal"),
+                onPressed: () {
+                  setState(() {});
+                },
+              );
             }
           }
         });
   }
-
 
   Widget producto() {
     return Container(
@@ -459,7 +467,11 @@ class _InfoProductoState extends State<InfoProducto> {
   }
 
   Widget actualizarPrecio() {
-    return ElevatedButton(onPressed: () { actulaizarDatos();}, child: Text("Actualizar precio"));
+    return ElevatedButton(
+        onPressed: () {
+          actulaizarDatos();
+        },
+        child: Text("Actualizar precio"));
   }
 
   Widget cambiarNombreTienda() {
@@ -554,75 +566,83 @@ class _InfoProductoState extends State<InfoProducto> {
   }
 
   actulaizarDatos() {
-
-    var precios=List.from(_itemsPrecio);
-    precios[indexSelectFecha]=controllerNuevoPrecio.text;
-    precios[indexSelectFecha]=controllerPrecio.text;
+    var precios = List.from(_itemsPrecio);
+    precios[indexSelectFecha] = controllerNuevoPrecio.text;
+    precios[indexSelectFecha] = controllerPrecio.text;
     Map<String, dynamic> datos = {
       "Producto": controllerProducto.text,
       "Descripcion": controllerDescripcion.text,
-      "Precios_$_selectItemTienda":precios,
-  
+      "Precios_$_selectItemTienda": precios,
     };
     addDate().actualizarDatos(datos);
     print("nuevos datos = " + datos.toString());
   }
-
-  
 
   Widget btnImagen() {
     return ElevatedButton(
         onPressed: () async {
           ImagePicker picker = ImagePicker();
           XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
-         // print("presione el boton");
+          imageData = await image!.readAsBytes();
+          // print("presione el boton");
           if (image != null) {
-          //  print("deberia obtener la image");
+            //  print("deberia obtener la image");
             setState(() {
               print(image.path.toString());
               file = File(image.path);
-            
+
               //img.image = image;
             });
           }
         },
-        child: Padding(padding: EdgeInsets.only(top: 20.0 , bottom: 20.0 , left: 50.0 , right: 50.0),child:Text("Seleccionar  Imagen" , style: TextStyle(fontSize: 20.0),)));
+        child: Padding(
+            padding: EdgeInsets.only(
+                top: 20.0, bottom: 20.0, left: 50.0, right: 50.0),
+            child: Text(
+              "Seleccionar  Imagen",
+              style: TextStyle(fontSize: 20.0),
+            )));
   }
 
   Widget cargarImage(BuildContext context) {
     if (file != null) {
-     
       print(file!);
-       File imageFile = File(file!.path);
-   
-      try{
+      File imageFile = File(file!.path);
 
+      try {
+        if (kIsWeb) {
+          // Lógica específica para el entorno web
+          print('La aplicación se está ejecutando en un navegador web');
+         
+            storageFirebase().uploadFile(imageData, addDate().barcode).then((value) {
 
- if (kIsWeb) {
-    // Lógica específica para el entorno web
-    print('La aplicación se está ejecutando en un navegador web');
-       
-     imgGallery(file!.path);
-   return Image.network(file!.path);
-  
-  } else {
-        // Lógica específica para Android u otro entorno
-      print('La aplicación se está ejecutando en Android u otro entorno');
-         storageFirebase().subirImagen(addDate().barcode, file!) ;
+     
+    
+                Fluttertoast.showToast(
+            msg: value.toString(),
+            backgroundColor: Colors.green,);
+            });
+/*
+      print(result);
+                Fluttertoast.showToast(
+            msg: result.toString(),
+            backgroundColor: Colors.green,);
 
-     return Image(image: FileImage(file!),);
-  
-  }
+*/
+          return Image.network(file!.path);
+        } else {
+          // Lógica específica para Android u otro entorno
+          print('La aplicación se está ejecutando en Android u otro entorno');
+          storageFirebase().subirImagen(addDate().barcode, file!);
 
-
-      }
-      catch(e){
-       return  Text(e.toString());
+          return Image(
+            image: FileImage(file!),
+          );
+        }
+      } catch (e) {
+        return Text(e.toString());
       }
       return Text("l");
-
-      
     } else {
       //imgLoag = false;
       return Text("");
@@ -630,12 +650,13 @@ class _InfoProductoState extends State<InfoProducto> {
   }
 
   Future<void> imgGallery(String path) async {
-    String result="";
-Uint8List imageData = await XFile(path).readAsBytes();
-result=await storageFirebase().subirImageWeb(imageData , addDate().barcode);
- 
-Fluttertoast.showToast(
-              msg:result,
-              backgroundColor: Colors.green,);
-}
+    String result = "";
+    Uint8List imageData = await XFile(path).readAsBytes();
+//result=await storageFirebase().subirImageWeb(imageData , addDate().barcode);
+
+    Fluttertoast.showToast(
+      msg: result,
+      backgroundColor: Colors.green,
+    );
+  }
 }

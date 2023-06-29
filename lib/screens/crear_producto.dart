@@ -48,7 +48,12 @@ class _CrearProductoState extends State<CrearProducto> {
     return SingleChildScrollView(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [producto(), descripcion(), tienda(), precio(), btnAdd()],
+      children: [producto(), descripcion(), tienda(), precio(), btnAdd(),
+      
+      ElevatedButton(onPressed: (){
+
+        print(addDate().barcode);
+      }, child: Text("Barcode"))],
     ));
   }
 
@@ -153,6 +158,13 @@ class _CrearProductoState extends State<CrearProducto> {
   }
 
   agregarDatos() {
+
+    print("Producto : " + controllerProducto.text);
+     print("Precio : " + controllerPrecio.text);
+      print("Descripcion : " + controllerDescripcion.text);
+       print("Tienda : " + controllerTienda.text);
+          print("Barcode : " + addDate().barcode);
+      
 //elimino los espacios
     controllerPrecio.text = controllerPrecio.text.replaceAll(' ', '');
    // controllerDescripcion.text = controllerDescripcion.text.replaceAll(' ', '');
@@ -180,6 +192,8 @@ class _CrearProductoState extends State<CrearProducto> {
     } else {
       toast('Porfavor llena todos lo campos');
     }
+
+    
   }
 
   toast(msg) {
@@ -199,5 +213,3 @@ class _CrearProductoState extends State<CrearProducto> {
 
 
 }
-//flutter pub add firebase_storage
-//https://firebase.google.com/docs/storage/flutter/start?hl=es-419&authuser=0
